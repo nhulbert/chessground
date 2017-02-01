@@ -84,4 +84,6 @@ module.exports = function(cfg) {
       data.drawable.shapes = shapes;
     }, this.data, false)();
   }.bind(this);
+
+  this.discreteTest = anim(board.identity, this.data, false);
 };

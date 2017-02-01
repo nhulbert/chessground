@@ -26,6 +26,7 @@ module.exports = function(controller) {
     explode: controller.explode,
     setAutoShapes: controller.setAutoShapes,
     setShapes: controller.setShapes,
+    discreteTest: controller.discreteTest,
     data: controller.data // directly exposes chessground state for more messing around
   };
 };

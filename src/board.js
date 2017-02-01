@@ -113,6 +113,14 @@ function baseMove(data, orig, dest) {
   return success;
 }
 
+function identity(data){
+  var success = anim(function() {
+    return true;
+  }, data)();
+  if (success) data.movable.dropped = [];
+  return success;
+}
+
 function baseNewPiece(data, piece, key) {
   if (data.pieces[key]) return false;
   callUserFunction(util.partial(data.events.dropNewPiece, piece, key));
@@ -191,6 +199,34 @@ function dropNewPiece(data, orig, dest) {
   }
   delete data.pieces[orig];
   setSelected(data, null);
+}
+
+function userFlick(data, vel, key) {
+  var toRemove = data.animationDiscrete.current.toRemove;
+  
+  var winState = 0;
+  var whiteWin = toRemove.indexOf("e8") !== -1;
+  var blackWin = toRemove.indexOf("e1") !== -1;
+    
+  if (whiteWin){
+      if (blackWin){
+          winState = 2;
+      }
+      else{
+          winState = 1;
+          if (data.orientation === "black") winState = -1;
+      }
+  }
+  else if (blackWin){
+      winState = -1;
+      if (data.orientation === "black") winState = 1;
+  }
+    
+  callUserFunction(util.partial(data.movable.events.afterFlick, vel, key, winState));
+}
+
+function apiFlick(data, vel, key) {
+    
 }
 
 function selectSquare(data, key) {
@@ -384,6 +420,7 @@ function getScore(data) {
 }
 
 module.exports = {
+  identity: identity,
   reset: reset,
   toggleOrientation: toggleOrientation,
   setPieces: setPieces,
@@ -394,6 +431,7 @@ module.exports = {
   canMove: canMove,
   userMove: userMove,
   dropNewPiece: dropNewPiece,
+  userFlick: userFlick,
   apiMove: apiMove,
   apiNewPiece: apiNewPiece,
   playPremove: playPremove,

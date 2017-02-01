@@ -76,6 +76,10 @@ function translate(pos) {
   return 'translate(' + pos[0] + 'px,' + pos[1] + 'px)';
 }
 
+function rotate(deg){
+  return 'rotate(' + deg + 'deg)';
+}
+
 function eventPosition(e) {
   if (e.clientX || e.clientX === 0) return [e.clientX, e.clientY];
   if (e.touches && e.targetTouches[0]) return [e.targetTouches[0].clientX, e.targetTouches[0].clientY];
@@ -116,6 +120,7 @@ module.exports = {
   invertKey: invertKey,
   opposite: opposite,
   translate: translate,
+  rotate: rotate,
   containsX: containsX,
   distance: distance,
   eventPosition: eventPosition,

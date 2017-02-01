@@ -3,6 +3,7 @@ var draw = require('./draw');
 var util = require('./util');
 var svg = require('./svg');
 var makeCoords = require('./coords');
+var board = require('./board');
 var m = require('mithril');
 
 var pieceTag = 'piece';
@@ -18,6 +19,9 @@ function renderPiece(d, key, ctx) {
     style: {},
     class: pieceClass(d.pieces[key])
   };
+  var color = attrs.class.split(" ")[1];
+  var orientation = d.orientation;
+  var angle = orientation === color ? 0 : 180;
   var translate = posToTranslate(util.key2pos(key), ctx);
   var draggable = d.draggable.current;
   if (draggable.orig === key && draggable.started) {
@@ -30,8 +34,14 @@ function renderPiece(d, key, ctx) {
       translate[0] += animation[1][0];
       translate[1] += animation[1][1];
     }
+  } else if (d.animationDiscrete.current.anims){
+    var animation = d.animationDiscrete.current.anims[key];
+    if (animation){
+      translate[0] = animation[1][0];
+      translate[1] = animation[1][1];
+    }
   }
-  attrs.style[ctx.transformProp] = util.translate(translate);
+  attrs.style[ctx.transformProp] = util.translate(translate)+' '+util.rotate(angle);
   if (d.pieceKey) attrs['data-key'] = key;
   return {
     tag: pieceTag,
@@ -58,14 +68,20 @@ function posToTranslate(pos, ctx) {
   ];
 }
 
-function renderGhost(key, piece, ctx) {
+function renderGhost(key, piece, ctx, anims) {
   if (!piece) return;
   var attrs = {
     key: 'g' + key,
     style: {},
     class: pieceClass(piece) + ' ghost'
   };
-  attrs.style[ctx.transformProp] = util.translate(posToTranslate(util.key2pos(key), ctx));
+  var anim;
+  if (anims && (anim = anims[key])){
+    attrs.style[ctx.transformProp] = util.translate(anim[1]);
+  }
+  else{
+      attrs.style[ctx.transformProp] = util.translate(posToTranslate(util.key2pos(key), ctx));
+  }
   return {
     tag: pieceTag,
     attrs: attrs
@@ -172,7 +188,7 @@ function renderContent(ctrl) {
   if (d.draggable.showGhost) {
     var dragOrig = d.draggable.current.orig;
     if (dragOrig && !d.draggable.current.newPiece)
-      children.push(renderGhost(dragOrig, d.pieces[dragOrig], ctx));
+      children.push(renderGhost(dragOrig, d.pieces[dragOrig], ctx, d.animationDiscrete.current.anims));
   }
   if (d.drawable.enabled) children.push(svg(ctrl));
   return children;
@@ -189,10 +205,19 @@ function startDragOrDraw(d) {
   };
 }
 
-function dragOrDraw(d, withDrag, withDraw) {
+function dragOrDraw(d, withDrag, withDraw, ctrl) {
   return function(e) {
     if ((e.shiftKey || util.isRightButton(e)) && d.drawable.enabled) withDraw(d, e);
-    else if (!d.viewOnly) withDrag(d, e);
+    else if (!d.viewOnly) {
+      var res = withDrag(d, e);
+      if (res) {
+          if (d.turnColor === d.orientation) {
+              ctrl.discreteTest(res);
+              board.userFlick(d, [-res.vec[0], -res.vec[1]], res.piece);
+              d.turnColor = d.turnColor === "white" ? "black" : "white";
+          }
+      }
+    }
   };
 }
 
@@ -200,7 +225,7 @@ function bindEvents(ctrl, el, context) {
   var d = ctrl.data;
   var onstart = startDragOrDraw(d);
   var onmove = dragOrDraw(d, drag.move, draw.move);
-  var onend = dragOrDraw(d, drag.end, draw.end);
+  var onend = dragOrDraw(d, drag.end, draw.end, ctrl);
   var startEvents = ['touchstart', 'mousedown'];
   var moveEvents = ['touchmove', 'mousemove'];
   var endEvents = ['touchend', 'mouseup'];

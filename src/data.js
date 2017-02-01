@@ -47,6 +47,24 @@ module.exports = function(cfg) {
        *}*/
       current: {}
     },
+    animationDiscrete: {
+      enabled: true,
+      duration: 1000,
+      /*{ // current
+       *  start: timestamp,
+       *  duration: ms,
+       *  anims: {
+       *    a2: [
+       *      [-30, 50], // animation goal
+       *      [-20, 37]  // animation current status
+       *    ], ...
+       *  },
+       *  numFrames: ,
+       *  active: ,
+       *  toRemove: ,
+       *}*/
+      current: {}
+    },
     movable: {
       free: true, // all moves are valid - board editor
       color: 'both', // color that can move. white | black | both | null
@@ -57,6 +75,7 @@ module.exports = function(cfg) {
       events: {
         after: function(orig, dest, metadata) {}, // called after the move has been played
         afterNewPiece: function(role, pos) {} // called after a new piece is dropped on the board
+        afterFlick: function(vel, key) {}
       },
       rookCastle: true // castle by moving the king to the rook
     },

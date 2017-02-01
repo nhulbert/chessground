@@ -1,6 +1,7 @@
 var board = require('./board');
 var util = require('./util');
 var draw = require('./draw');
+var collide = require('./collide');
 
 var originTarget;
 
@@ -31,7 +32,21 @@ function start(data, e) {
   var previouslySelected = data.selected;
   var position = util.eventPosition(e);
   var bounds = data.bounds();
-  var orig = board.getKeyAtDomPos(data, position, bounds);
+  var orig;
+  var keys = [];
+  if (data.animationDiscrete.current.anims){
+      for (var i = 0; i < util.allKeys.length; i++) {
+        var key = util.allKeys[i];
+        if (key !== data.movable.dropped[1] && data.animationDiscrete.current.anims[key]) {
+          keys.push(key);
+        }
+      }
+      
+      orig = collide.point(position, keys, data);
+  }
+  else{
+    orig = board.getKeyAtDomPos(data, position, bounds);
+  }
   var piece = data.pieces[orig];
   if (!previouslySelected && (
     data.drawable.eraseOnClick ||
@@ -41,9 +56,9 @@ function start(data, e) {
   var hadPremove = !!data.premovable.current;
   var hadPredrop = !!data.predroppable.current.key;
   data.stats.ctrlKey = e.ctrlKey;
-  board.selectSquare(data, orig);
-  var stillSelected = data.selected === orig;
-  if (piece && stillSelected && board.isDraggable(data, orig)) {
+  //board.selectSquare(data, orig);
+  //var stillSelected = data.selected === orig;
+  if (piece && board.isDraggable(data, orig)) {
     var squareBounds = computeSquareBounds(data, bounds, orig);
     data.draggable.current = {
       previouslySelected: previouslySelected,
@@ -99,6 +114,7 @@ function move(data, e) {
 }
 
 function end(data, e) {
+  var result = null;
   var cur = data.draggable.current;
   var orig = cur ? cur.orig : null;
   if (!orig) return;
@@ -110,20 +126,30 @@ function end(data, e) {
   }
   board.unsetPremove(data);
   board.unsetPredrop(data);
-  var eventPos = util.eventPosition(e)
+  var eventPos = util.eventPosition(e);
   var dest = eventPos ? board.getKeyAtDomPos(data, eventPos, cur.bounds) : cur.over;
   if (cur.started) {
-    if (cur.newPiece) board.dropNewPiece(data, orig, dest);
-    else {
-      if (orig !== dest) data.movable.dropped = [orig, dest];
-      data.stats.ctrlKey = e.ctrlKey;
-      if (board.userMove(data, orig, dest)) data.stats.dragged = true;
-    }
+    //if (cur.newPiece) board.dropNewPiece(data, orig, dest);
+    //else {
+    //  if (orig !== dest) data.movable.dropped = [orig, dest];
+    //  data.stats.ctrlKey = e.ctrlKey;
+    //  if (board.userMove(data, orig, dest)) data.stats.dragged = true;
+    //}
+    
+    var origPos = data.draggable.current.rel;
+
+    var vec = [eventPos[0]-origPos[0], eventPos[1]-origPos[1]];
+    
+    result = {
+      piece: orig,
+      vec: vec
+    };
   }
-  if (orig === cur.previouslySelected && (orig === dest || !dest))
-    board.setSelected(data, null);
-  else if (!data.selectable.enabled) board.setSelected(data, null);
+  //if (orig === cur.previouslySelected && (orig === dest || !dest))
+  //  board.setSelected(data, null);
+  //else if (!data.selectable.enabled) board.setSelected(data, null);
   data.draggable.current = {};
+  return result;
 }
 
 function cancel(data) {

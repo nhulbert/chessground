@@ -1,5 +1,5 @@
 {
-  "name": "chessground",
+  "name": "flickground",
   "version": "4.3.16",
   "description": "lichess.org Chess UI",
   "main": "src/main.js",
@@ -22,7 +22,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/ornicar/chessground.git"
+    "url": "git://github.com/nhulbert/flickground.git"
   },
   "keywords": [
     "chess",
@@ -35,5 +35,5 @@
   "bugs": {
     "url": "https://github.com/ornicar/chessground/issues"
   },
-  "homepage": "https://github.com/ornicar/chessground"
+  "homepage": "https://github.com/nhulbert/flickground"
 }

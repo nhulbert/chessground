@@ -12,7 +12,7 @@ var destination = './';
 var onError = function(error) {
   gutil.log(gutil.colors.red(error.message));
 };
-var standalone = 'Chessground';
+var standalone = 'Flickground';
 
 gulp.task('lint', function() {
   return gulp.src('./src/main.js')
@@ -25,7 +25,7 @@ gulp.task('prod', function() {
     standalone: standalone
   }).bundle()
     .on('error', onError)
-    .pipe(source('chessground.min.js'))
+    .pipe(source('flickground.min.js'))
     .pipe(streamify(uglify()))
     .pipe(gulp.dest(destination));
 });
@@ -42,7 +42,7 @@ gulp.task('dev', function() {
   function rebundle() {
     return bundleStream.bundle()
       .on('error', onError)
-      .pipe(source('chessground.js'))
+      .pipe(source('flickground.js'))
       .pipe(gulp.dest(destination));
   }
 

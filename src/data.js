@@ -74,7 +74,7 @@ module.exports = function(cfg) {
       showDests: true, // whether to add the move-dest class on squares
       events: {
         after: function(orig, dest, metadata) {}, // called after the move has been played
-        afterNewPiece: function(role, pos) {} // called after a new piece is dropped on the board
+        afterNewPiece: function(role, pos) {}, // called after a new piece is dropped on the board
         afterFlick: function(vel, key) {}
       },
       rookCastle: true // castle by moving the king to the rook
